@@ -1,0 +1,67 @@
+{
+  "name": "mangoblock",
+  "version": "1.0.0",
+  "description": "mangoblock (desktop version)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mangoblock/mangoblock-desktop.git"
+  },
+  "author": "Dr. Chihmin Lo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mangoblock/mangoblock-desktop/issues"
+  },
+  "homepage": "https://github.com/mangoblock/mangoblock-desktop#readme",
+  "devDependencies": {
+    "check-dependencies": "^1.1.0",
+    "electron": "^9.2.0",
+    "electron-builder": "^22.9.1",
+    "electron-rebuild": "^2.3.5"
+  },
+  "dependencies": {
+    "bcrypt": "^5.0.0",
+    "dive": "^0.5.0",
+    "node-disk-info": "^1.1.0",
+    "node-wifi": "^2.0.14",
+    "serialport": "^9.0.1",
+    "wifi-control": "^2.0.1"
+  },
+  "build": {
+    "appId": "com.mangoblock.app",
+    "productName": "mangoblock",
+    "asar": false,
+    "win": {
+      "icon": "build/favicon.ico",
+      "target": [
+        "msi",
+        "nsis",
+        "zip"
+      ]      
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": "default",
+      "icon": "build/favicon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/favicon.png",
+      "category": "Development"
+    },
+    "fileAssociations": [
+      {
+        "ext": "mby",
+        "name": "MBY",
+        "description": "mangoblock project file",
+        "icon": "build/favicon.ico",
+        "role": "Editor"
+      }
+    ]
+  },
+  "postinstall": "electron-builder install-app-deps"
+}
