@@ -1,10 +1,12 @@
 {
   "name": "mangoblock",
-  "version": "1.2.11",
+  "version": "1.2.14",
   "description": "mangoblock (desktop version)",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "install": "electron-rebuild -f -w \"wifi-control\"",
+    "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
   "repository": {
@@ -18,30 +20,25 @@
   },
   "homepage": "https://github.com/mangoblock/mangoblock-desktop#readme",
   "devDependencies": {
-    "check-dependencies": "^1.1.0",
-    "electron": "^9.2.0",
-    "electron-builder": "^22.9.1",
+    "check-dependencies": "1.1.0",
+    "electron": "9.2.0",
+    "electron-builder": "22.9.1",
     "electron-rebuild": "^2.3.5"
   },
   "dependencies": {
-    "bcrypt": "^5.0.0",
-    "dive": "^0.5.0",
-    "node-disk-info": "^1.1.0",
-    "node-wifi": "^2.0.14",
-    "serialport": "^9.0.1",
-    "wifi-control": "^2.0.1"
+    "bcrypt": "5.0.0",
+    "dive": "0.5.0",
+    "node-disk-info": "1.1.0",
+    "node-wifi": "2.0.14",
+    "serialport": "9.0.1"
   },
   "build": {
     "appId": "com.mangoblock.app",
-    "productName": "mangoblock",
-    "asar": false,
+    "productName": "MangoBlock",
+    "asar": true,
     "win": {
-      "icon": "build/favicon.ico",
-      "target": [
-        "msi",
-        "nsis",
-        "zip"
-      ]      
+      "target": "msi",
+      "icon": "build/mango.png"
     },
     "mac": {
       "category": "public.app-category.developer-tools",
@@ -50,14 +47,14 @@
     },
     "linux": {
       "target": "AppImage",
-      "icon": "build/favicon.png",
+      "icon": "build/mango.png",
       "category": "Development"
     },
     "fileAssociations": [
       {
-        "ext": "mby",
-        "name": "MBY",
-        "description": "mangoblock project file",
+        "ext": "mb",
+        "name": "MB",
+        "description": "MangoBlock project file",
         "icon": "build/favicon.ico",
         "role": "Editor"
       }
