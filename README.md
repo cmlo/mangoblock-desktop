@@ -1,17 +1,20 @@
-# mangoblock-desktop
-A blockly-based programming editor for the microprocessor system  with Block &amp; MicroPython
-![mangoblock](https://user-images.githubusercontent.com/6203187/192109940-d13c3a31-efab-4488-a66c-dd9121352364.png)
+# mangoBlock IDE (desktop version)
 
+Desktop version of mangoBlock IDE
 
+## Using
 
+```bash
 # Clone project
-git clone --recurse-submodules https://github.com/cmlo/mangoblock-desktop.git
+git clone --recurse-submodules https://github.com/mangoBlock/mangoBlock-desktop.git
 
-# Install electron-builder
-npm install --save-dev electron-builder
+# Install electron-rebuild
+npm install --save-dev electron-rebuild
 
 # Install the dependencies 
 npm install
 
 # Run program
 npm start
+```
+
