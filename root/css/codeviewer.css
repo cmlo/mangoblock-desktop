@@ -1,0 +1,75 @@
+
+#codeviewer {
+    /* display: flex; */
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    width: 300px;
+    display: none;
+}
+
+#codeviewer-h-resize {
+    position: absolute;
+    width: 6px;
+    height: 100%;
+    background-color: #424949;
+    cursor: col-resize;
+    top: 0;
+    right: 0;
+    z-index: 3988;
+    opacity: 0;
+    display: none;
+}
+
+#codeviewer-h-resize:hover,
+#codeviewer-h-resize.active {
+    width: 6px;
+    opacity: 1;
+}
+
+#codeviewer > header {
+    background-color: #7F8C8D;
+    position: relative;
+    width: 100%;
+}
+
+#codeviewer > header > .title {
+    color: #FFF;
+    padding: 20px;
+    font-size: 24px;
+    /* text-align: center; */
+    width: 100%;
+    box-shadow: 0 0 10px rgb(0 0 0 / 39%);
+}
+
+#codeviewer > header > .icon {
+    position: absolute;
+    right: 10px;
+    top: 100%;
+    transform: translateY(-50%);
+}
+
+#codeviewer > header > .icon > button {
+    border-radius: 100px;
+    border: none;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    outline: none;
+    color: #FFF;
+    background-color: #616A6B;
+}
+
+#codeviewer > header > .icon > button:hover {
+    background-color: #515A5A;
+}
+
+#codeviewer > header > .icon > button > i {
+    text-align: center;
+}
+ 
+#codeviewer > section {
+    background-color: #000;
+    height: 100%;
+    flex-grow: 1;
+}

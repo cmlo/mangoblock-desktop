@@ -1,0 +1,77 @@
+
+#terminal {
+    /* display: flex; */
+    flex-direction: column;
+    height: 100%;
+    z-index: 3988;
+    overflow: hidden;
+    width: 300px;
+    display: none;
+    flex-shrink: 0;
+}
+
+#terminal-h-resize {
+    position: absolute;
+    width: 6px;
+    height: 100%;
+    background-color: #424949;
+    cursor: col-resize;
+    top: 0;
+    right: 0;
+    z-index: 3988;
+    opacity: 0;
+    display: none;
+}
+
+#terminal-h-resize:hover,
+#terminal-h-resize.active {
+    width: 6px;
+    opacity: 1;
+}
+
+#terminal > header {
+    background-color: #7F8C8D;
+    position: relative;
+    width: 100%;
+}
+
+#terminal > header > .title {
+    color: #FFF;
+    padding: 20px;
+    font-size: 24px;
+    /* text-align: center; */
+    width: 100%;
+    box-shadow: 0 0 10px rgb(0 0 0 / 39%);
+}
+
+#terminal > header > .icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#terminal > header > .icon > button {
+    border-radius: 100px;
+    border: none;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    outline: none;
+    color: #FFF;
+    background-color: #616A6B;
+}
+
+#terminal > header > .icon > button:hover {
+    background-color: #515A5A;
+}
+
+#terminal > header > .icon > button > i {
+    text-align: center;
+}
+ 
+#terminal > section {
+    background-color: #000;
+    height: 100%;
+    flex-grow: 1;
+}

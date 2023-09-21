@@ -1,0 +1,51 @@
+/* Blockly hardover */
+.blocklyMainBackground {
+    stroke-width: 0 !important;
+  }
+.toolboxBackgroundColour {
+    fill: #6dc7cc !important;
+  }
+.blocklySvg {
+    background-color: #ffffff !important;
+    border: none !important;
+  }
+.blocklyToolboxDiv {
+    background: #f3f3f3;
+    color: #000000;
+  }
+.blocklyFlyoutBackground {
+    fill: #e1e1e1 !important;
+  }
+.collapsibleCategory {
+    color: #000000;
+  }
+.blocklyTreeIconOpen {
+    background-image: url(../images/toolbox/light/arrow-up.svg);
+}
+.blocklyTreeIconClosed {
+    background-image: url(../images/toolbox/light/arrow-down.svg);
+}
+.blocklyTreeRow > .blocklyTreeRowContentContainer > .blocklyTreeLabel {
+    color: #232121 !important;
+}
+.page > .main > .code-area > .left-box > .pico-box {
+    background-color: #c8c8d3 !important;
+    border-color: rgb(82, 84, 82) !important;
+}
+.page > .main > .code-area > .left-box {
+    background-color: #ffffff;
+    border-right: #2e2e2f 2px solid;
+}
+.btns-connect {
+    color: #000000 !important;
+}
+.ext-item {
+    border: #2b2b2b 2px solid !important;
+    background-color: #e2e7e7;
+}
+.ext-item > .ext-text {
+    color: #3d3a3a;
+}
+.blocklyFlyoutLabelText {
+    color: #00b900 !important;
+}

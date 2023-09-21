@@ -1,0 +1,51 @@
+/*** theme: dark ***/
+.blocklyMainBackground {
+    stroke-width: 0 !important;
+  }
+.toolboxBackgroundColour {
+    fill: #0096A6 !important;
+  }
+.blocklySvg {
+    background-color: #E4E4E4 !important;
+    border: none !important;
+  }
+.blocklyToolboxDiv {
+    background: #1B202B;
+    color: rgb(255, 255, 255);
+  }
+.blocklyFlyoutBackground {
+    fill: #4A5459 !important;
+  }
+.collapsibleCategory {
+    color: rgb(255, 255, 255);
+  }
+.blocklyTreeIconOpen {
+    background-image: url(../images/toolbox/dark/arrow-up.svg);
+}
+.blocklyTreeIconClosed {
+    background-image: url(../images/toolbox/dark/arrow-down.svg);
+}
+.blocklyTreeRow > .blocklyTreeRowContentContainer > .blocklyTreeLabel {
+    color: #ffffff !important;
+}
+.page > .main > .code-area > .left-box > .pico-box {
+    background-color: #1F1F28 !important;
+    border-color: rgb(173, 185, 178) !important;
+}
+.page > .main > .code-area > .left-box {
+    background-color: #44464d !important;
+    border-right: #2e2e2f 2px solid !important;
+}
+.btns-connect {
+    color: #FFFFFF !important;
+}
+.ext-item {
+    border: #FFFFFF 2px solid !important;
+    background-color: #586c58;
+}
+.ext-item > .ext-text {
+    color: #FFFFFF;
+}
+.blocklyFlyoutLabelText {
+    color: #00b900 !important;
+}

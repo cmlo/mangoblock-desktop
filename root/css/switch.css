@@ -1,0 +1,57 @@
+.switch > input[type=checkbox]{
+    height: 0;
+    width: 0;
+    visibility: hidden;
+}            
+.switch > label {
+    cursor: pointer;
+    width: 120px;
+    height: 48px;
+    display: block;
+    border-color: rgb(255, 255, 255);
+    border-width: 3px;
+    border-style: solid;
+    border-radius: 46px;
+    position: relative;
+    padding-top: 0px;
+}
+.switch > label:after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 60px;
+    height: 36px;
+    border-radius: 46px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #FFFFFF;
+    transition: 0.3s;
+}
+.switch > .switch-txt::before,
+.switch > .switch-txt::after {
+    display: block;
+    color: #fff;
+    font-weight: bold;
+    box-sizing: border-box;
+}
+.switch > .switch-txt::before {
+    content: attr(turnOn);
+    color: #fff;
+}
+.switch > .switch-txt::after {
+    content: attr(turnOff);
+    color: #ccc;
+}                   
+.switch > label:active:after {
+    width: 60px;
+}
+.switch > input:checked + label:after {
+    left: calc(100% - 1px);
+    transform: translateX(-100%);
+}
+.switch {
+    font-size: 2em;
+    display: flex;
+    flex-direction: row;
+}
