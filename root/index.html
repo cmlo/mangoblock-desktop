@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>mangoblock</title>
+        <meta name="description" content="Program a microcontroller with Block & MicroPython.">
+        <meta name="theme-color" content="#F1C40F" />
+        <link rel="icon" href="favicon.ico" sizes="32x32">
+        <link rel="manifest" href="manifest.json">
+        <script>
+        const isElectron = navigator.userAgent.toLowerCase().indexOf("electron/") >= 0;
+
+        if (isElectron) {
+            console.log("This is electron !");
+            rootPath = "/.";
+            remote = require('electron').remote;
+            shell = require('electron').shell;
+            ipcRenderer = require('electron').ipcRenderer;
+            nodeFS = require("fs");
+            promisify = require('util').promisify;
+            spawn = require('child_process').spawn;
+            os = require('os');
+            path = require("path");
+            nodeDiskInfo = require('node-disk-info');
+            readFileAsync = promisify(nodeFS.readFile);
+            writeFileAsync = promisify(nodeFS.writeFile);
+            dive = require('dive');
+            dialog = remote.dialog;
+			sharedObj = remote.getGlobal('sharedObj');
+            pjson = require(`${sharedObj.rootPath}/../package.json`);
+            serialAPI = require('serialport');
+        } else {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js').then((reg) => {
+                        // console.log('Service worker registered.', reg);
+                    });
+                });
+            }
+            rootPath = "/.";
+        }
+        let pageParams = new URLSearchParams(location.search);
+        let isEmbed = pageParams.get("embed") !== null;
+        const MODE_REAL_DEVICE  = 0;
+        const MODE_SIMULATOR    = 1;
+        let deviceMode = MODE_REAL_DEVICE;
+        </script>
+
+        <!-- Blockly -->
+        <script src="./mangoblock.js"></script>
+        <script src="blockly/closure/goog/base.js"></script>
+        <script src="blockly/blockly_compressed.js"></script>
+        <script src="blockly/blocks_compressed.js"></script>
+        <script src="blockly/python_compressed.js"></script>
+        <script src="blockly/javascript_compressed.js"></script>
+        <script src="blockly/themes/classic.js"></script>
+        <script src="blockly/msg/index.js"></script>
+        <script src="blockly/msg/lang/en.js"></script>
+        <script src="blockly/msg/ext/en.js"></script>
+
+        <!-- Utilities and Environment -->
+        <script src="js/utilities.js"></script>
+        <script src="js/settings.js"></script>        
+        
+        <!-- extensions blockly file -->
+        <script src="blockly/extensions/blocks.js"></script>
+        <script src="blockly/extensions/generator.js"></script>
+
+        
+        <!-- Insert this line above script imports  -->
+        <script>
+        if (typeof module === 'object') {
+            window.module = module; 
+            module = undefined;
+        }
+        </script>
+
+        <!-- jQuery -->
+        <script src="js/jquery-3.5.1.min.js"></script>
+        <script src="js/jquery-ui.js"></script>
+        <link rel="stylesheet" href="css/jquery-ui.css">
+
+        <!-- zlib -->
+        <script src="js/pako.min.js"></script>
+
+        <!-- MD5 -->
+        <script src="js/md5.min.js"></script>
+
+        <!-- Insert this line after script imports -->
+        <script>if (window.module) module = window.module;</script>
+
+        <!-- Notiflix -->
+        <link rel="stylesheet" href="plug-in/notiflix/notiflix-2.3.3.min.css">
+        <script src="plug-in/notiflix/notiflix-2.3.3.min.js"></script>
+
+        <!-- Tippy.js -->
+        <script src="plug-in/tippyjs/popper.min.js"></script>
+        <script src="plug-in/tippyjs/tippy-bundle.umd.min.js"></script>
+
+        <!-- xterm.js -->
+        <link rel="stylesheet" href="plug-in/xterm.js/xterm.css">
+        <script src="plug-in/xterm.js/xterm.js"></script>
+        <script src="plug-in/xterm.js/xterm-addon-fit.js"></script>
+
+        <!-- tools -->
+        <script src="js/esptool.js"></script>
+
+        <!-- Monaco Editor -->
+        <link rel="stylesheet" href="plug-in/monaco-editor/min/vs/editor/editor.main.css">
+        
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="plug-in/fontawesome/css/all.min.css">
+
+        <!-- Animate.css -->
+        <link rel="stylesheet" href="css/animate.min.css">
+        <!-- Window css -->
+        <link rel="stylesheet" href="css/note.css">
+        <link rel="stylesheet" href="css/terminal.css">
+        <link rel="stylesheet" href="css/board-info.css">
+        <link rel="stylesheet" href="css/style-base.css">     
+        <link rel="stylesheet" href="css/style-main.css">
+        <link rel="stylesheet" href="css/toolbox-style.css">
+        <link rel="stylesheet" href="css/switch.css">
+    </head>
+
+    <body>
+        <div id="full-loading">
+            <div class="box">
+                <img src="images/mangoblock-text.svg">
+                <div class="label">Loading...</div>
+            </div>
+        </div>
+
+        <div class="page">
+            <!-- main -->
+            <article class="main"> 
+                <header>
+                    <div class="header-logo">
+                        <div class="logo">
+                            <img src="images/mangoblock-text.svg">
+                        </div>
+                        <div class="lang-set">
+                            <img id="language-setting" class="button" src="images/icons/x-earth.svg" width="40" height="40" title="Language">
+                        </div>
+                    </div>
+                    <div class="control-box">
+                        <div class="left-button-list">
+                            <div class="menu-button lm40">
+                                <img id="new-project" class="button" src="images/icons/x-add-file.svg" width="40" height="40" title="new project">
+                            </div>
+                            <div class="menu-button lm10">
+                                <img id="open-project" class="button" src="images/icons/x-open.svg" width="40" height="40" title="open project">
+                            </div>
+                            <div class="lm20 project-info">
+                                <span id="project-label">Project:</span>
+                                <input type="text" id="project-name" value="myProject" placeholder="Project Name">
+                            </div>
+                            <div class="menu-button">
+                                <img id="save-project" class="button" src="images/icons/x-save.svg" width="40" height="40" title="save project">
+                            </div>
+                            <div class="menu-button lm20">
+                                <img id="upload-program" class="button" src="images/icons/x-upload.svg" width="40" height="40" title="upload program">
+                            </div>
+                            <div class="menu-button lm5">
+                                <img id="remove-program" class="button" src="images/icons/x-delete.svg" width="40" height="40" title="remove program">
+                            </div>
+                        </div>
+                        <div class="mode-button-list">
+                            <div class="lm5">
+                                <img id="switch-to-block" class="button" title="Block" src="./images/icons/x-blocks.svg" width="40" height="40" onclick="switchMode(1);">
+                            </div>
+                            <div class="lm5">
+                                <img id="switch-to-python" class="button" title="Python" src="./images/icons/x-python.svg" width="40" height="40" onclick="switchMode(2);">
+                            </div>
+                            <div class="lm5">
+                                <img id="switch-to-arduino" class="button" title="Ardiono" src="./images/icons/x-arduino.png" width="40" height="40" onclick="switchMode(3);">
+                            </div>
+                            <div class="lm5">
+                                <img id="switch-to-javascript" class="button" title="JavaScript" src="./images/icons/x-javascript.png" width="40" height="40" onclick="switchMode(4);">
+                            </div>
+                        </div>
+                        <div class="right-button-list">
+                            <div class="menu-button lm10">
+                                <img id="open-extension" class="button" src="images/icons/x-extension.svg" width="48" height="48" title="Extension">
+                            </div>
+                            <div class="menu-button lm10">
+                                <img id="open-example" class="button" src="images/icons/x-examples.svg" width="48" height="48" title="Examples">
+                            </div>
+                            <div class="menu-button lm10">
+                                <img id="open-note" class="button" src="images/icons/x-note.svg" width="48" height="48" title="Notes">
+                            </div>  
+                            <div class="menu-button lm10 rm20">
+                                <img id="open-terminal" class="button" src="images/icons/x-console.svg" width="48" height="48" title="Terminal">
+                            </div>  
+                        </div>
+                    </div>                    
+                </header>
+                <section class="code-area">
+                    <div class="left-box">
+                        <div class="pico-box">
+                            <img id="board-image" src="boards/rp2-pico/images/cover.png" width="160" height="160">
+                        </div>
+                        <div class="ext-modules">
+                            <div class="ext-button">
+                                <img id="update-firmware" class="button" title="Firmware" src="./images/icons/x-exec.svg" width="32" height="32">
+                            </div>
+                            <div id="ext-listbox">
+                                <div>
+                                    <div class="ext-item button tm10">
+                                        <img id="btn-run" src="images/icons/play.svg" title="Run">
+                                    </div>
+                                    <div class="ext-item button">
+                                        <img id="btn-stop" src="images/icons/stop.svg" title="Stop">
+                                    </div>
+                                </div>
+                                <div class="type-select">
+                                    <div>
+                                        <img id="port-select" src="images/icons/usb.svg">
+                                        <img id="port-connect" src="images/icons/connect.svg">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>                      
+                        <div class="btns-connect"> 
+                            <img id="btn-disconnect" src="./images/icons/btn-connected.png" width="40" height="40">
+                            <img id="btn-connect" src="./images/icons/btn-disconnected.png" width="40" height="40">
+                            <span id="usb-state">Connected</span>
+                        </div> 
+                    </div>  
+                    <div class="right-box">
+                        <section id="blocks-editor">
+                            <div id="blocklyArea"></div>
+                            <div id="blocklyDiv" style="position: absolute;"></div>
+                        </section>
+                        <section id="code-editor">
+                            <article id="code-container"></article>
+                        </section>
+                    </div>
+                </section>
+                <footer>
+                    <div class="status-bar">
+                        <div class="left" id="text-status">Not do anything</div>
+                        <div class="right">
+                            <ul>
+                                <li><span id="board-label">Board: </span><span id="board-name">None</span></li>
+                                <li><span id="firmware-label">Firmware: </span><span id="firmware-name">None</span></li>
+                                <li><span id="level-label">Level: </span><span id="level-name">None</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </footer>
+            </article>
+
+            <!-- Right Terminal -->
+            <article id="terminal">
+                <header>
+                    <div class="title">
+                        <span id="terminal_title">Terminal</span>
+                    </div>
+                    <div class="icon">
+                        <button id="connect-device" data-tippy-content="Connect"><i class="fas fa-link"></i></button>
+                        <button id="disconnect-device" data-tippy-content="Disconnect"><i class="fas fa-comment-slash"></i></button>
+                        <button id="clear-terminal" data-tippy-content="Clear"><i class="fas fa-eraser"></i></button>
+                        <button id="resize-terminal" data-tippy-content="Resize"><i class="fas fa-expand-alt"></i></button>
+                        <button id="close-terminal" data-tippy-content="Close"><i class="fas fa-times"></i></button>
+                    </div>
+                </header>
+                <section contenteditable="true"></section>
+            </article>
+
+            <!-- Right Note -->
+            <article id="note">
+                <header>
+                    <div class="title">
+                        <span id="note_title">Note</span>
+                    </div>
+                    <div class="icon">
+                        <button id="new-note" data-tippy-content="New"><i class="fas fa-plus"></i></button>
+                        <button id="close-note" data-tippy-content="Close"><i class="fas fa-times"></i></button>
+                    </div>
+                </header>
+                <section>
+                    <ul id="note-box-list">                        
+                    </ul>
+                </section>
+            </article>
+
+            <!-- Board Information -->
+            <article id="board-info">
+                <header>
+                    <div class="title">
+                        <span id="board-info_title">TUTORIAL</span>
+                    </div>
+                    <div class="icon">
+                        <button id="close-board-info" data-tippy-content="Close"><i class="fas fa-times"></i></button>
+                    </div>
+                </header>
+                <section>
+                    <div><span id="board-info-name"></span></div>
+                    <div><span id="board-info-author"></span></div>
+                    <div><span id="board-info-desc"></span></div>
+                    <hr class="style-one" />
+                    <div id="board-info-list">
+                    </div>
+                </section>
+            </article>
+
+        </div>
+
+        <article id="terminal-h-resize"></article>
+        <article id="note-h-resize"></article>
+        <article id="board-info-h-resize"></article>
+
+        <div id="uploading">
+            <div class="loader-inner">
+              <div class="loader-line-wrap">
+                <div class="loader-line"></div>
+              </div>
+              <div class="loader-line-wrap">
+                <div class="loader-line"></div>
+              </div>
+              <div class="loader-line-wrap">
+                <div class="loader-line"></div>
+              </div>
+              <div class="loader-line-wrap">
+                <div class="loader-line"></div>
+              </div>
+              <div class="loader-line-wrap">
+                <div class="loader-line"></div>
+              </div>
+            </div>
+        </div>
+        <div id="progress">
+            <div class="progress-bar"></div>
+        </div>
+
+        <div id="dialog-backdrop"></div>
+        
+        <!-- Extension Dialog -->
+        <div class="dialog" id="extension-dialog">
+            <header>
+                <div class="title">Extension</div>
+                <div class="center">
+                    <input type="text" id="extension-keyword" placeholder="Search">
+                </div>
+                <div class="icon">
+                    <button id="open-extension-creator" data-tippy-content="Extension Creator">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button data-tippy-content="Close" class="close-dialog"><i class="fas fa-times"></i></button>
+                    <div class="add-extension-box">
+                        <form action="#" method="POST" id="form-add-extension">
+                            <label for="extension-github-url">GitHug Repository URL</label>
+                            <input type="url" id="extension-github-url" name="extension-github-url" autocomplete="off" placeholder="https://github.com/username/repository" required>
+                            <button type="submit">Add Extension</button>
+                            <button type="reset">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            <section class="extension-work-box">
+                <ul class="extension-category-list">
+                    <li class="active">All</li>
+                    <li>Display</li>
+                    <li>Communication</li>
+                    <li>Signal Input/Output</li>
+                    <li>Sensors</li>
+                    <li>Device Control</li>
+                    <li>Timing</li>
+                    <li>Data Storage</li>
+                    <li>Data Processing</li>
+                    <li>Other</li>
+                    <li class="hr"></li>
+                    <li>Installed</li>
+                </ul>
+                <ul class="extension-list">
+                    <li>
+                        <div class="extension-box" data-extension-id="1">
+                            <div class="header">
+                                <div class="cover">
+                                    <img src="images/toolbox/empty.png" alt="">
+                                </div>
+                                <div class="detail">
+                                    <div class="name">MQTT<span class="installed-icon"><i class="fas fa-check-circle"></i></span></div>
+                                    <div class="author">Sonthaya Nongnuch</div>
+                                    <div class="other">
+                                        <span class="version">1.0.0</span>
+                                        <a href="https://www." target="_blank"><i class="fab fa-github"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="description">Connect everything with MQTT</div>
+                            <div class="button">
+                                <button class="extension-install"><i class="fas fa-download"></i> Install</button>
+                                <button class="extension-uninstall"><i class="fas fa-trash-alt"></i> Uninstall</button>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+        </div>
+
+        <!-- GitHub Dialog -->
+        <div class="dialog-tab" id="github-dialog">
+            <section>
+                <header>
+                    <div class="title">Project hosted on GitHub<div class="close-btn"><i class="fas fa-times"></i></div></div>
+                    <ul>
+                        <li data-active="#github-dialog-open">Open Project</li>
+                        <li data-active="#github-dialog-new">New Project</li>
+                    </ul>
+                </header>
+                <section id="github-dialog-open">
+                    <ul id="github-repository-list">
+
+                    </ul>
+                    <div class="control-button">
+                        <button id="github-open-project-button">Open Project</button>
+                    </div>
+                </section>
+                <section id="github-dialog-new">
+                    <form action="" method="POST" id="form-github-create-project" autocomplete="off">
+                        <label for="github-create-project-name">Project Name</label>
+                        <input type="text" name="name" pattern="[A-Za-z0-9\-_]+" placeholder="GitHub repository name" required>
+                        <label for="github-create-project-description">Project Description</label>
+                        <input type="text" name="description" placeholder="GitHub repository description">
+                        <label><input type="checkbox" name="save-code" value="1" checked> Save current code to new project</label>
+                        <div class="control-button">
+                            <button type="submit">Create Project</button>
+                        </div>
+                    </form>
+                </section>
+            </section>
+        </div>
+
+        <!-- New Project Dialog -->
+        <div id="project-create-dialog">
+            <section>
+                <header>
+                    <div class="title">
+                        <span id="title-new-project">New project</span>
+                    </div>
+                    <div class="close-btn"><i class="fas fa-times"></i></div>
+                </header>
+                <section>
+                    <form action="#" method="POST">
+                        <div class="control">
+                            <label id="label-new-project" for="project-name-input">Project Name</label>
+                            <input id="project-name-input" type="text" value="myProject1" placeholder="eg. Blink" required>
+                        </div>
+                        <div class="control">
+                            <label id="label-hardware">Hardware</label>
+                            <div id="hardware-select" class="image-select">
+                                <ul></ul>
+                                <button type="button" id="board-see-more-btn" class="button">See More</button>
+                            </div>
+                        </div>                        
+                        <div class="button-group">
+                            <button type="button" id="create-project-btn" class="button">Create</button>
+                        </div>
+                    </form>
+                </section>
+            </section>            
+        </div>
+
+        <!-- Port Select Dialog -->
+        <div id="type-select-dialog">
+            <section>
+                <header>
+                    <div class="title">Select connection type</div>
+                    <div class="close-btn"><i class="fas fa-times"></i></div>
+                </header>
+                <section>
+                    <ul id="type-list">
+                        <li data-port="usb">
+                            <img src="images/icons/usb.svg">
+                            <span>Serial Port</span>
+                        </li>
+                        <li data-port="ble">
+                            <img src="images/icons/bluetooth.svg">
+                            <span>Bluetooth</span>
+                        </li>
+                        <li data-port="wifi">
+                            <img src="images/icons/wifi-g.svg">
+                            <span>WiFi</span>
+                        </li>
+                    </ul>
+                    <div class="control-button">
+                        <button id="type-select-button">OK</button>
+                    </div>
+                </section>
+            </section>
+        </div>
+        <!-- Port Select Dialog -->
+        <div id="port-select-dialog">
+            <section>
+                <header>
+                    <div id="port-select-title" class="title">Select Serial Port</div>
+                    <div class="close-btn"><i class="fas fa-times"></i></div>
+                </header>
+                <section>
+                    <ul id="port-list">
+                    </ul>
+                    <div class="control-button">
+                        <button id="port-select-button">OK</button>
+                    </div>
+                </section>
+            </section>
+        </div>
+        <!-- WiFi Select Dialog -->
+        <div id="wifi-select-dialog">
+            <section>
+                <header>
+                    <div id="wifi-select-title" class="title">Select Serial Port</div>
+                    <div class="close-btn"><i class="fas fa-times"></i></div>
+                </header>
+                <section>
+                    <ul id="wifi-list">
+                    </ul>
+                    <div class="control-button">
+                        <button id="wifi-select-button">OK</button>
+                    </div>
+                </section>
+            </section>
+        </div>
+        <!-- Language Select Dialog -->
+        <div id="lang-select-dialog">
+            <section>
+                <header>
+                    <div id="lang-select-title" class="title">Select Language</div>
+                    <div class="close-btn"><i class="fas fa-times"></i></div>
+                </header>
+                <section>
+                    <ul id="lang-list">
+                    </ul>
+                    <div class="control-button">
+                        <button id="lang-select-button">OK</button>
+                    </div>
+                </section>
+            </section>
+        </div>
+
+        <!-- Firmware Upgrade Dialog -->
+        <div id="firmware-upgrade-dialog">
+            <section>
+                <header>
+                    <div class="title">Firmware Upgrade</div>
+                    <div class="close-btn"><i class="fas fa-times"></i></div>
+                </header>
+                <section>
+                    <article class="todo">
+                        <div class="firmware-contents">
+                            <div class="column1">
+                                <img src="images/icons/processor.svg" width="64" height="64">
+                            </div>
+                            <div class="column2">
+                                <span id="firmware-upgrade-tip">You haven't installed MicroPython or it's out of date.</span>
+                            </div>
+                        </div>
+                        <div class="botton-group">
+                            <button id="install-firmware-button">Upgrade Firmware</button>
+                        </div>
+                        <div class="note-for-rp2">Hold BOOT button then click RESET button before next</div>
+                    </article>
+                    <article class="doing">
+                        <div class="icon">
+                            <img src="images/loading-1.gif" width="200">
+                        </div>
+                        <div>
+                            <span id="install_firmware">Installing Firmware...</span>
+                        </div>
+                        <div class="progress-box">
+                            <div class="back-drop"></div>
+                            <div class="caption"></div>
+                        </div>
+                        <div class="warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="firmware-upgrade-donot-close">Don't close program or unplug device</span>
+                        </div>
+                    </article>
+                    <article class="done">
+                        <div class="icon success">
+                            <img src="images/icons/success.svg" width="64">
+                        </div>
+                        <div class="icon fail">
+                            <img src="images/icons/failed.svg" width="64">
+                        </div>
+                        <p id="firmware-upgrade-status">Upgrade Successful</p>
+                        <div class="botton-group">
+                            <button id="firmware-upgrade-close-btn" class="close-btn">Close</button>
+                        </div>
+                    </article>
+                </section>
+            </section>
+        </div>
+
+        <!-- Code Share Dialog -->
+        <div id="code-share-dialog">
+            <section>
+                <header>
+                    <div class="title">Share</div>
+                    <div class="close-btn"><i class="fas fa-times"></i></div>
+                </header>
+                <section>
+                    <div class="preview-block"></div>
+                    <ul class="bottom-menu">
+                        <li data-type="link" data-tippy-content="Copy share link to clipboard"><i class="fas fa-link" style="color: #2C3E50;"></i></li>
+                        <li data-type="facebook" data-tippy-content="Share to Facebook"><i class="fab fa-facebook-f" style="color: #4267b2;"></i></li>
+                        <li data-type="line" data-tippy-content="Share to LINE"><i class="fab fa-line" style="color: #00b900;"></i></li>
+                        <li data-type="twitter" data-tippy-content="Share to Twitter"><i class="fab fa-twitter" style="color: #1da1f2;"></i></li>
+                        <li data-type="code" data-tippy-content="Copy Embed code"><i class="fas fa-code" style="color: #D4AC0D;"></i></li>
+                    </ul>
+                </section>
+            </section>
+        </div>
+
+        <!-- Code Example Dialog -->
+        <div id="code-example-dialog" class="dialog">
+            <header>
+                <div class="title">Examples</div>
+                <div class="center">
+                    <ul class="switch-mode small" id="code-example-mode-select-switch">
+                        <div class="switch">
+                            <input type="checkbox" id="mode-switch" checked />
+                            <label for="mode-switch">
+                                <span class="rp10"></span>
+                                <img src="./images/icons/x-blocks.svg" width="40" height="40">
+                                <span class="rp10"></span>
+                                <img src="./images/icons/x-python.svg" width="40" height="40">
+                            </label>
+                        </div>
+                    </ul>
+                </div>
+                <div class="icon">
+                    <button id="add-example-code-to-workspace" title="Add to workspace"><i class="fas fa-file-import"></i></button>
+                    <button id="example-dialog-close-button" title="Close" class="close-dialog"><i class="fas fa-times"></i></button>
+                </div>
+            </header>
+            <section>
+                <div class="example-list">
+                    <ul id="example-list-item">
+                    </ul>
+                </div>
+                <div class="code-view">
+                    <section class="work-box">
+                        <div id="noSelectExampleFile">
+                            <div>
+                                <i class="far fa-hand-point-left"></i>
+                                <span id="example-dialog-tip">Select example in left list</span>
+                            </div>
+                        </div>
+                        <!-- <div id="blocklyArea"></div> -->
+                        <div id="blocklyDivExampleCode" style="display: none;"></div>
+                        <div id="codeEditorExampleCode" style="display: none;"></div>
+                    </section>
+                    <!-- <article>
+                        <header>
+                            <div class="title">1234</div>
+                            <div class="icon">
+                                <button class="close-article"><i class="fas fa-times"></i></button>
+                            </div>
+                        </header>
+                        <section>124567893214</section>
+                    </article> -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Toolbox -->
+        <xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
+            <category name="  " colour="#FFFFFF">
+                <block type="controls_if"></block>
+                <block type="logic_compare"></block>
+                <block type="controls_repeat_ext"></block>
+                <block type="math_number">
+                    <field name="NUM">123</field>
+                </block>
+                <block type="math_arithmetic"></block>
+                <block type="text"></block>
+                <block type="text_print"></block>
+            </category>
+        </xml>
+
+        <!-- Monaco editor -->
+        <script>var require = {paths: {'vs': 'plug-in/monaco-editor/min/vs'}};</script>
+        <script src="plug-in/monaco-editor/min/vs/loader.js"></script>
+	    <script src="plug-in/monaco-editor/min/vs/editor/editor.main.nls.js"></script>
+	    <script src="plug-in/monaco-editor/min/vs/editor/editor.main.js"></script>
+                
+        <!-- Python to Block converter -->
+        <script src="js/code2block.js"></script>
+
+        <!-- Utilities -->
+        <script src="js/Notify.js"></script>
+        <script src="js/Base64.js"></script>
+        <script src="js/vFS.js"></script>
+        <script src="js/GitHubAPI.js"></script>
+        <script src="js/mode.js"></script>
+        <script src="js/firmware.js"></script>        
+        <script src="js/serial.js"></script>
+        <script src="js/tools.js"></script>
+        <script src="js/terminal.js"></script>
+        <script src="js/note.js"></script>
+        <script src="js/dialog.js"></script>
+        <script src="js/extension.js"></script>
+        <script src="js/examples.js"></script>
+        <script src="js/board.js"></script>
+        <script src="boards/index.js"></script>
+        <script src="js/install.js"></script>
+        <script src="js/menu.js"></script>
+        <script src="js/ui.js"></script>
+        <script src="js/app.js"></script>
+    </body>
+    <script>
+
+    </script>
+</html>
