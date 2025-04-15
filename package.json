@@ -1,6 +1,6 @@
 {
   "name": "mangoblock",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "PYTHON_API": "2.1.6",
   "description": "mangoblock (desktop version)",
   "main": "main.js",
